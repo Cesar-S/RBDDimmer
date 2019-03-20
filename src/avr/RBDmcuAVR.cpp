@@ -48,7 +48,7 @@ volatile uint16_t dimZCPin[ALL_DIMMERS]; //add mod for XOD without effect in AVR
 dimmerLamp::dimmerLamp(int user_dimmer_pin, int zc_dimmer_pin): //", int zc_dimmer_pin" add mod for XOD without effect in AVR
 	dimmer_pin(user_dimmer_pin), // "," add mod for XOD without effect in AVR
 	zc_pin(zc_dimmer_pin) //add mod for XOD without effect in AVR
-	
+
 {
 	current_dim++;
 	dimmer[current_dim-1] = this;
@@ -65,7 +65,7 @@ dimmerLamp::dimmerLamp(int user_dimmer_pin, int zc_dimmer_pin): //", int zc_dimm
 	togMax[current_dim-1] = 1;
 	pinMode(user_dimmer_pin, OUTPUT);
 }
- 
+
 void dimmerLamp::timer_init(void)
 {
 	TCCRxA(DIMMER_TIMER) &= ~(0xFF); // clean TCCRxA register
@@ -80,37 +80,37 @@ void dimmerLamp::timer_init(void)
 	TIMSKx(DIMMER_TIMER) |= (1 << TOIEx(DIMMER_TIMER)); //timer interrupt enable
 }
 
-void dimmerLamp::ext_int_init(void) 
-{ 
-	EICRX &= ~0xFF; 
+void dimmerLamp::ext_int_init(void)
+{
+	EICRX &= ~0xFF;
 
-	EIMSK |= (1 << INTx); 
-	EICRX |= (1 << ISCx1)|(1 << ISCx0);//0b00001100 
+	EIMSK |= (1 << INTx);
+	EICRX |= (1 << ISCx1)|(1 << ISCx0);//0b00001100
 }
 
 //add mod for XOD without effect in AVR
 void dimmerLamp::ext_int_init_(void) //add mod for XOD without effect in AVR
-{									 //add mod for XOD without effect in AVR
-	int inPin = dimZCPin; 			 //add mod for XOD without effect in AVR
-}									 //add mod for XOD without effect in AVR
+{									                   //add mod for XOD without effect in AVR
+	int inPin = dimZCPin; 			       //add mod for XOD without effect in AVR
+}									                   //add mod for XOD without effect in AVR
 
 void dimmerLamp::begin(DIMMER_MODE_typedef DIMMER_MODE, ON_OFF_typedef ON_OFF)
 {
 	dimMode[this->current_num] = DIMMER_MODE;
 	dimState[this->current_num] = ON_OFF;
 	timer_init();
-	ext_int_init();	
+	ext_int_init();
 }
 
 void dimmerLamp::setPower(int power)
-{	
-	if (power >= 99) 
+{
+	if (power >= 99)
 	{
 		power = 99;
 	}
 	dimPower[this->current_num] = power;
 	dimPulseBegin[this->current_num] = powerBuf[power];
-	
+
 	delay(1);
 }
 
@@ -137,7 +137,7 @@ bool dimmerLamp::getState(void)
 void dimmerLamp::changeState(void)
 {
 	if (dimState[this->current_num] == ON) dimState[this->current_num] = OFF;
-	else 
+	else
 		dimState[this->current_num] = ON;
 }
 
@@ -153,11 +153,11 @@ void dimmerLamp::setMode(DIMMER_MODE_typedef DIMMER_MODE)
 
 void dimmerLamp::toggleSettings(int minValue, int maxValue)
 {
-	if (maxValue > 99) 
+	if (maxValue > 99)
 	{
     	maxValue = 99;
 	}
-	if (minValue < 1) 
+	if (minValue < 1)
 	{
     	minValue = 1;
 	}
@@ -170,8 +170,8 @@ void dimmerLamp::toggleSettings(int minValue, int maxValue)
 
 ISR(INT_vect)
 {
-	for (int i = 0; i < current_dim; i++ ) 
-		if (dimState[i] == ON) 
+	for (int i = 0; i < current_dim; i++ )
+		if (dimState[i] == ON)
 		{
 			zeroCross[i] = 1;
 		}
@@ -179,7 +179,7 @@ ISR(INT_vect)
 
 static int k;
 ISR (TIMER_COMPA_VECTOR(DIMMER_TIMER))
-{	
+{
 	toggleCounter++;
 	for (k = 0; k < current_dim; k++)
 	{
@@ -192,29 +192,29 @@ ISR (TIMER_COMPA_VECTOR(DIMMER_TIMER))
 			/*****
 			 * TOGGLE DIMMING MODE
 			 *****/
-			if (dimPulseBegin[k] >= togMax[k]) 	
+			if (dimPulseBegin[k] >= togMax[k])
 			{
-				// if reach max dimming value 
-				togDir[k] = false;	// downcount				
+				// if reach max dimming value
+				togDir[k] = false;	// downcount
 			}
 			if (dimPulseBegin[k] <= togMin[k])
 			{
-				// if reach min dimming value 
+				// if reach min dimming value
 				togDir[k] = true;	// upcount
 			}
-			if (toggleCounter == toggleReload) 
+			if (toggleCounter == toggleReload)
 			{
 				if (togDir[k] == true) dimPulseBegin[k]++;
 				else dimPulseBegin[k]--;
 			}
 			}
-			
+
 			/*****
 			 * DEFAULT DIMMING MODE (NOT TOGGLE)
 			 *****/
 			if (dimCounter[k] >= dimPulseBegin[k] )
 			{
-				digitalWrite(dimOutPin[k], HIGH);	
+				digitalWrite(dimOutPin[k], HIGH);
 			}
 
 			if (dimCounter[k] >=  (dimPulseBegin[k] + pulseWidth) )
@@ -227,7 +227,7 @@ ISR (TIMER_COMPA_VECTOR(DIMMER_TIMER))
 	}
 
 	if (toggleCounter >= toggleReload) toggleCounter = 1;
-	TIFRx(DIMMER_TIMER) |= ((1<<OCFxB(DIMMER_TIMER))|(1<<OCFxA(DIMMER_TIMER)));	
+	TIFRx(DIMMER_TIMER) |= ((1<<OCFxB(DIMMER_TIMER))|(1<<OCFxA(DIMMER_TIMER)));
 }
 
 #endif
