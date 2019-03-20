@@ -90,9 +90,9 @@ void dimmerLamp::ext_int_init(void)
 
 //add mod for XOD without effect in AVR
 void dimmerLamp::ext_int_init_(void) //add mod for XOD without effect in AVR
-{									                   //add mod for XOD without effect in AVR
-	int inPin = dimZCPin; 			       //add mod for XOD without effect in AVR
-}									                   //add mod for XOD without effect in AVR
+{ //add mod for XOD without effect in AVR
+	int inPin = dimZCPin; //add mod for XOD without effect in AVR
+} //add mod for XOD without effect in AVR
 
 void dimmerLamp::begin(DIMMER_MODE_typedef DIMMER_MODE, ON_OFF_typedef ON_OFF)
 {
